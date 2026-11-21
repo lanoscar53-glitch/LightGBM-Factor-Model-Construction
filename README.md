@@ -16,6 +16,19 @@ Walk-forward LightGBM-Bayes stock selection: **monthly retraining + monthly Baye
 
 GRS test: stat=7.69, p=0.001 — the linear factor model cannot explain portfolio returns (significant non-linear alpha).
 
+## Robustness Check: Original Paper Hyperparameters (2020-01 ~ 2026-09)
+
+Given that our bayesian parameters is only optimized with 12 mouths of scrolling data which might be slightly overfitting, hence, we also adopt original parameters procured from the referenced paper. Chart below is the corresponding results (same 11 factors and Top10 equal-weight / quarterly-rebalance scheme, fixed Table 5 hyperparameters, annual October retraining, fee 1bp/side):
+
+![paper-hyperparameter result](figures/wealth_paperv2_ew10_2020.png)
+
+| Portfolio | Ann. Return | Sharpe | Max Drawdown | Win Rate | Rank IC (mean) |
+|---|---|---|---|---|---|
+| LGBv2-paper_hp_ew10 (Top10 equal-weight) | **30.2%** | **1.05** | -20.5% | 61.7% | 0.0450 (ICIR 0.40, t=3.59) |
+| CSI 300 (benchmark) | 1.4% | 0.17 | -40.6% | 50.6% | — |
+
+The fixed paper hyperparameters (stronger regularization: reg_alpha=1.0, reg_lambda=1.45, subsample=0.764) outperform the Bayesian-tuned ones in this window — the 12-month rolling tuning window tends to overfit recent noise.
+
 ## Factor Definitions (11 factors)
 
 All factors are cross-sectionally winsorized (1%/99%) and then z-score standardized. Financial factors are made point-in-time via an asof join on the first-disclosure version (`f_ann_date`, enforced at ann_date+1). TTM = sum of the last four single-quarter values (single-quarter = within-year YTD difference, Q1 = itself). Market cap (`total_mv`) is in units of 10k CNY and converted (×1e4) before valuation ratios.
@@ -40,7 +53,7 @@ Style factors (used only in the Markowitz box constraints, not as model features
 
 ```
 ├── paper/     referenced paper (PDF)
-├── src/       backtest code (walk-forward version)
+├── src/       backtest code (walk-forward version + paper-hyperparameter 2020 version)
 ├── results/   monthly returns (CSV) / holdings & style exposure (JSON) / metrics incl. monthly tuning history (JSON)
 └── figures/   NAV chart with core-metric annotations
 ```
