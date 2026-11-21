@@ -4,7 +4,7 @@ This is a report hoping to exam the actual effect of pure machine learning in cu
 
 ## Final Result (2020-01 ~ 2026-10)
 
-Walk-forward LightGBM-Bayes stock selection: **monthly retraining + monthly Bayesian hyperparameter retuning** on a trailing 12-month window (lagged 13 months for label realization, no look-ahead), 11 factors (5 kept from the referenced paper + 6 significant ones from our 16-factor system), Top20 constrained Markowitz (monthly, with industry/style/beta box constraints) and Top10 equal-weight (quarterly) portfolios, fee 1bp/side:
+Walk-forward LightGBM-Bayes stock selection: **monthly retraining + monthly Bayesian hyperparameter retuning** on a trailing 12-month window (lagged 13 months for label realization, no look-ahead), Top20 constrained Markowitz (monthly) and Top10 equal-weight (quarterly) portfolios, fee 1bp/side:
 
 ![final result](figures/wealth_paperv2_2020wf.png)
 
@@ -14,29 +14,45 @@ Walk-forward LightGBM-Bayes stock selection: **monthly retraining + monthly Baye
 | LGBv2_ew10 (Top10 equal-weight) | 6.7% | 0.38 | -29.3% | 53.1% | 0.0416 (ICIR 0.39, t=3.52) |
 | CSI 300 (benchmark) | 1.4% | 0.17 | -40.6% | 50.6% | — |
 
-GRS test: stat=7.69, p=0.001 — the linear factor model cannot explain portfolio returns (significant non-linear alpha), consistent with the referenced paper's claim of non-linear factor interactions captured by tree ensembles.
+GRS test: stat=7.69, p=0.001 — the linear factor model cannot explain portfolio returns (significant non-linear alpha).
+
+## Factor Definitions (11 factors)
+
+通用口径：所有因子先做截面 winsorize(1%/99%) 再 z-score 标准化；财务因子经 asof 连接 + 首披版 `f_ann_date` 实现 PIT（ann_date+1 生效）；TTM = 最近 4 个报告期单季值之和（单季化 = 年内 YTD 差分，Q1=自身）；市值字段 `total_mv` 单位为万元，估值因子计算前统一 ×1e4 转元。
+
+| 类别 | 因子 | 计算方式 | 口径要点 |
+|---|---|---|---|
+| 估值 | **PS** 市销率 | PS = MV / Rev_TTM | 无单位倍数 |
+| 估值 | **PCF** 市现率 | PCF = MV / OCF_TTM（仅 OCF_TTM > 0） | 现金流为负置 NULL |
+| 估值 | **EP** 盈利收益率 | EP = 1 / PE_TTM | 亏损股 PE 为空 → EP 自动剔除 |
+| 成长 | **OR_YoY** 营收同比(TTM) | Rev_TTM(t) / Rev_TTM(t−4) − 1 | 条件 Rev_TTM(t−4) > 0 |
+| 成长 | **NP_YoY** 归母净利同比(TTM) | NP_TTM(t) / NP_TTM(t−4) − 1 | 无正值约束，扭亏极端值靠 winsorize 兜底 |
+| 盈利质量 | **ROA** 总资产净利率(TTM) | NP_TTM / TA × 100% | 用当期期末总资产（非期初期末均值口径） |
+| 盈利质量 | **GPM** 毛利率(TTM) | (Rev_TTM − COGS_TTM) / Rev_TTM × 100% | ⚠️ 代码用 `total_cogs`（营业总成本），实为**营业利润率**口径而非严格毛利率 |
+| 盈利质量 | **Accrual** 应计 | (NP_TTM − OCF_TTM) / TA × 100% | Sloan(1996) 利润质量因子，负值=现金流质量好 |
+| 量价 | **REVS20** 20日反转 | −(P̃_t / P̃_{t−20} − 1) | P̃ 为后复权价，动量取负 |
+| 量价 | **STD60** 60日波动率 | σ₆₀(日收益) × √244 | 60 日内有效观测 ≥ 40，否则 NULL |
+| 量价 | **TURN20** 20日换手率 | (1/20) Σ turnover_{t−k} | Tushare 统一口径 |
+
+风格约束因子（仅用于 Markowitz 盒约束，不进训练特征）：**SIZE** = −ln(流通市值)；**beta250** = 250 日滚动对沪深300收益的最小二乘斜率（≥200 观测），用于钳制组合 beta 押注。
 
 ## Repository Structure
 
 ```
 ├── paper/     referenced paper (PDF)
 ├── src/       backtest code (walk-forward version)
-├── results/   monthly returns (CSV) / holdings & style exposure (JSON) / metrics (JSON)
-├── figures/   NAV chart with core-metric annotations
-└── reports/   summary (MD) + factor definitions & mathematical forms (DOCX)
+├── results/   monthly returns (CSV) / holdings & style exposure (JSON) / metrics incl. monthly tuning history (JSON)
+└── figures/   NAV chart with core-metric annotations
 ```
-
-## Key Documents
-
-- **Factor definitions & mathematical forms**: [reports/paper_v2因子计算方式与数学形式.docx](reports/paper_v2因子计算方式与数学形式.docx)
-- **Methodology & full result summary**: [reports/backtest_report_paperv2_2020wf.md](reports/backtest_report_paperv2_2020wf.md)
 
 ## Methodology in Brief
 
 - Universe: all A-shares ex ST / Beijing Stock Exchange / new listings (<370 days) / suspended; PIT financials with ann_date+1 enforcement (first-disclosure versions to avoid restatement look-ahead)
 - Prices: post-adjusted (hfq), executed at t+1 open with one-word limit-up/down rules
-- Label: sign of forward 12-month post-adjusted return (referenced-paper convention); training window strictly lags signal month by 13 months so all training labels are fully realized
-- Hyperparameters: re-tuned monthly by Bayesian optimization (15 gp_minimize calls on a 12k subsample, 3-fold CV) alongside the monthly model retrain
+- Label: sign of forward 12-month post-adjusted return (referenced-paper convention); the training window strictly lags the signal month by 13 months so all training labels are fully realized
+- Model: LightGBM with monthly Bayesian hyperparameter retuning (15 gp_minimize calls on a 12k subsample, 3-fold CV, objective = mean of Precision/Recall/Accuracy/AUC)
+- Portfolios: Top20 Markowitz with industry (10%) / style (35%) / single-stock (12%) / beta box constraints, 0.5% rebalance threshold; Top10 equal-weight rebalanced quarterly
+- Factor origin: 5 kept from the referenced paper's significant set (OR_YoY / NP_YoY / ROA / PS / PCF) + 6 from our 16-factor system's significant set (EP / TURN20 / STD60 / REVS20 / Accrual / GPM)
 - Data source: local quantitative database built from Tushare/Sina; monthly inputs cached as parquet. Full run takes ~22 min on cached data
 
-*Referenced paper: Li, Xu, Li (2022), Procedia Computer Science 214:1234-1240 — 5-minute price-volume factors + LightGBM stock selection. Reproduced here at daily/monthly factor frequency with the paper's kept factors plus extensions.*
+*Referenced paper: Li, Xu, Li (2022), Procedia Computer Science 214:1234-1240 — 5-minute price-volume factors + LightGBM stock selection.*
