@@ -18,7 +18,7 @@ GRS test: stat=7.69, p=0.001 — the linear factor model cannot explain portfoli
 
 ## Factor Definitions (11 factors)
 
-通用口径：所有因子先做截面 winsorize(1%/99%) 再 z-score 标准化；财务因子经 asof 连接 + 首披版 `f_ann_date` 实现 PIT（ann_date+1 生效）；TTM = 最近 4 个报告期单季值之和（单季化 = 年内 YTD 差分，Q1=自身）；市值字段 `total_mv` 单位为万元，估值因子计算前统一 ×1e4 转元。
+All factors are cross-sectionally winsorized (1%/99%) and then z-score standardized. Financial factors are made point-in-time via an asof join on the first-disclosure version (`f_ann_date`, enforced at ann_date+1). TTM = sum of the last four single-quarter values (single-quarter = within-year YTD difference, Q1 = itself). Market cap (`total_mv`) is in units of 10k CNY and converted (×1e4) before valuation ratios.
 
 | 类别 | 因子 | 计算方式 | 口径要点 |
 |---|---|---|---|
@@ -28,13 +28,13 @@ GRS test: stat=7.69, p=0.001 — the linear factor model cannot explain portfoli
 | 成长 | **OR_YoY** 营收同比(TTM) | Rev_TTM(t) / Rev_TTM(t−4) − 1 | 条件 Rev_TTM(t−4) > 0 |
 | 成长 | **NP_YoY** 归母净利同比(TTM) | NP_TTM(t) / NP_TTM(t−4) − 1 | 无正值约束，扭亏极端值靠 winsorize 兜底 |
 | 盈利质量 | **ROA** 总资产净利率(TTM) | NP_TTM / TA × 100% | 用当期期末总资产（非期初期末均值口径） |
-| 盈利质量 | **GPM** 毛利率(TTM) | (Rev_TTM − COGS_TTM) / Rev_TTM × 100% | ⚠️ 代码用 `total_cogs`（营业总成本），实为**营业利润率**口径而非严格毛利率 |
+| 盈利质量 | **OPM** 营业利润率(TTM) | (Rev_TTM − TotalCost_TTM) / Rev_TTM × 100% | 注意区分营业利润率与毛利率 |
 | 盈利质量 | **Accrual** 应计 | (NP_TTM − OCF_TTM) / TA × 100% | Sloan(1996) 利润质量因子，负值=现金流质量好 |
 | 量价 | **REVS20** 20日反转 | −(P̃_t / P̃_{t−20} − 1) | P̃ 为后复权价，动量取负 |
 | 量价 | **STD60** 60日波动率 | σ₆₀(日收益) × √244 | 60 日内有效观测 ≥ 40，否则 NULL |
 | 量价 | **TURN20** 20日换手率 | (1/20) Σ turnover_{t−k} | Tushare 统一口径 |
 
-风格约束因子（仅用于 Markowitz 盒约束，不进训练特征）：**SIZE** = −ln(流通市值)；**beta250** = 250 日滚动对沪深300收益的最小二乘斜率（≥200 观测），用于钳制组合 beta 押注。
+Style factors (used only in the Markowitz box constraints, not as model features): **SIZE** = −ln(circulating market cap); **beta250** = 250-day rolling OLS slope against CSI 300 daily returns (≥200 observations), used to cap portfolio beta bets.
 
 ## Repository Structure
 
@@ -52,7 +52,7 @@ GRS test: stat=7.69, p=0.001 — the linear factor model cannot explain portfoli
 - Label: sign of forward 12-month post-adjusted return (referenced-paper convention); the training window strictly lags the signal month by 13 months so all training labels are fully realized
 - Model: LightGBM with monthly Bayesian hyperparameter retuning (15 gp_minimize calls on a 12k subsample, 3-fold CV, objective = mean of Precision/Recall/Accuracy/AUC)
 - Portfolios: Top20 Markowitz with industry (10%) / style (35%) / single-stock (12%) / beta box constraints, 0.5% rebalance threshold; Top10 equal-weight rebalanced quarterly
-- Factor origin: 5 kept from the referenced paper's significant set (OR_YoY / NP_YoY / ROA / PS / PCF) + 6 from our 16-factor system's significant set (EP / TURN20 / STD60 / REVS20 / Accrual / GPM)
+- Factor origin: 5 kept from the referenced paper's significant set (OR_YoY / NP_YoY / ROA / PS / PCF) + 6 from our 16-factor system's significant set (EP / TURN20 / STD60 / REVS20 / Accrual / OPM)
 - Data source: local quantitative database built from Tushare/Sina; monthly inputs cached as parquet. Full run takes ~22 min on cached data
 
 *Referenced paper: Li, Xu, Li (2022), Procedia Computer Science 214:1234-1240 — 5-minute price-volume factors + LightGBM stock selection.*
