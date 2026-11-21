@@ -1,0 +1,239 @@
+===== PAGE 5 =====
+1238 Zimo Li  et al. / Procedia Computer Science 214 (2022) 1234–1240
+ Author name / Procedia Computer Science 00 (2019) 000–000  5 
+Parameter 4 min_split_gain Minimum benefit of execution 
+segmentation 
+（0，1） 0.266  
+Parameter 5 reg_alpha L1 regularization weight term （0.005，30） 1.000  
+Parameter 6 reg_lambda L2 regularization weight term （0.005，30） 1.451  
+3.3. Comparison of algorithms after Bayesian Optimization 
+The optimal parameter values obtained above are respectively substituted into the original random forest, XGBoost 
+and LightGBM models to obtain the precision, recall, accuracy and AUC values. Table 7 shows the comparison 
+between the index values of the model before and after Bayesian optimization, which can not only see whether 
+Bayesian optimization can effectively improve the pe rformance of the algorithm, but also compare the effects of the 
+three algorithms again. 
+Table 6. Comparison of algorithms after Bayesian Optimization 
+ Precision Recall Accuracy AUC 
+Random Forest 0.7124 0.9994 0.5974 0.9672 
+Random Forest-bayes 0.7325 1 0.6888 0.9858 
+XGBoost 0.7279 0.9998 0.7942 0.9872 
+XGBoost-bayes 0.7606 1 0.8532 0.9864 
+LightGBM 0.7452 0.9996 0.8305 0.9860 
+LightGBM-bayes 0.7659 1 0.8567 0.9948 
+It can be seen from table 7 that among all the index values of the three algorithms, only the AUC value of XGBoost 
+is reduced by about 0.1% after Bayesian optimization, but the accuracy is improved by 6%, and the effect is very good. 
+After Bayesian optimization, the AUC value of LightGBM reaches 99.5%, which greatly improves the performance 
+of the algorithm. After Bayesian optimization, after comparing the effects of the three algorithms, it is found that 
+LightGBM is still better, and all the index values are optimal. 
+Fig.2. shows the feature importance of each factor when LightGBM -Bayes is used as the model for training and 
+testing. It can be seen that LightGBM -Bayes can make full use of various factors, which also shows that the 
+construction of the factor Library in this paper is reasonable. Among them, Sharpe ratio is the most important factor 
+affecting the annual return of stocks. 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+Fig.2. Feature importance 
+0.00%
+5.00%
+10.00%
+15.00%
+20.00%
+25.00%
+Feature importance
+6 Author name / Procedia Computer Science 00 (2019) 000–000 
+To sum up, the performance of LightGBM algorithm before and after parameter adjustment is the best. After 
+Bayesian optimization, its performance will be further strengthened. And LightGBM-bayes can make full use of all 
+factors, so this paper decides to choose LightGBM-bayes as the model for the following back test stock selection. 
+4. Implementation of model back testing 
+In this paper, the Annualized Returns、Sharpe Ratio、Information Ratio、Max Drawdown、Total Returns  are 
+taken as the evaluation criterion. 
+This paper selects the data processed in the fourth part as the stock pool, takes the data from January 1, 2013, to 
+December 31, 2017 as the training set, and the back test interval is from January 1, 2018 to December 31, 2018. Based 
+on the LightGBM-bayes multi factor stock selection model, the stocks are sorted in descending order according to the 
+probability of being judged as 1. The top ten stocks are the stock portfolio strategies selected for this year. Buy 10 
+stocks in the portfolio strategy with equa l weights, hold them until the end of the year, and adjust positions every 60 
+trading days. The benchmark is the Shanghai Shenzhen 300 index. The initial capital is set to 10 million yuan, the 
+handling fee is set to 1 / 1000 of the transaction amount, and the sliding point is set to 0. The results of stock selection 
+are as follows: 
+Table 7. Stock selection results 
+ Probability of being judged as 1 Stock Code 
+1 0.913 600642.SH 
+2 0.887 600218.SH 
+3 0.885 600750.SH 
+4 0.884 600879.SH 
+5 0.884 600079.SH 
+6 0.883 601369.SH 
+7 0.881 600123.SH 
+8 0.845 600620.SH 
+9 0.844 601628.SH 
+10 0.844 600143.SH 
+The back testing results are as follows: 
+Table 8. Back Testing Results 
+ Portfolio strategy CSI 300 Index 
+Total Returns 168.8% 66.7% 
+Annualized Returns 19.1% 9.6% 
+Sharpe Ratio 0.96 0.24 
+Max Drawdown 27.7% 31.9% 
+Information Ratio 2.4 0.8 
+It can be seen from table 8 that all indicators of the stock portfolio strategy selected by the multi factor stock 
+selection model based on LightGBM-bayes are better than the benchmark CSI 300 index. Therefore, the LightGBM-
+bayes multi factor stock selection model proposed in this paper is effective. 
+5. Summary 
+With the vigorous development of Chinese stock market and the introduction of the idea of quantitative investment, 
+more and more investors and related scholars began to pay attention to quantitative investment. However, the 
+===== PAGE 6 =====
+ Zimo Li  et al. / Procedia Computer Science 214 (2022) 1234–1240 1239
+ Author name / Procedia Computer Science 00 (2019) 000–000  5 
+Parameter 4 min_split_gain Minimum benefit of execution 
+segmentation 
+（0，1） 0.266  
+Parameter 5 reg_alpha L1 regularization weight term （0.005，30） 1.000  
+Parameter 6 reg_lambda L2 regularization weight term （0.005，30） 1.451  
+3.3. Comparison of algorithms after Bayesian Optimization 
+The optimal parameter values obtained above are respectively substituted into the original random forest, XGBoost 
+and LightGBM models to obtain the precision, recall, accuracy and AUC values. Table 7 shows the comparison 
+between the index values of the model before and after Bayesian optimization, which can not only see whether 
+Bayesian optimization can effectively improve the pe rformance of the algorithm, but also compare the effects of the 
+three algorithms again. 
+Table 6. Comparison of algorithms after Bayesian Optimization 
+ Precision Recall Accuracy AUC 
+Random Forest 0.7124 0.9994 0.5974 0.9672 
+Random Forest-bayes 0.7325 1 0.6888 0.9858 
+XGBoost 0.7279 0.9998 0.7942 0.9872 
+XGBoost-bayes 0.7606 1 0.8532 0.9864 
+LightGBM 0.7452 0.9996 0.8305 0.9860 
+LightGBM-bayes 0.7659 1 0.8567 0.9948 
+It can be seen from table 7 that among all the index values of the three algorithms, only the AUC value of XGBoost 
+is reduced by about 0.1% after Bayesian optimization, but the accuracy is improved by 6%, and the effect is very good. 
+After Bayesian optimization, the AUC value of LightGBM reaches 99.5%, which greatly improves the performance 
+of the algorithm. After Bayesian optimization, after comparing the effects of the three algorithms, it is found that 
+LightGBM is still better, and all the index values are optimal. 
+Fig.2. shows the feature importance of each factor when LightGBM -Bayes is used as the model for training and 
+testing. It can be seen that LightGBM -Bayes can make full use of various factors, which also shows that the 
+construction of the factor Library in this paper is reasonable. Among them, Sharpe ratio is the most important factor 
+affecting the annual return of stocks. 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+Fig.2. Feature importance 
+0.00%
+5.00%
+10.00%
+15.00%
+20.00%
+25.00%
+Feature importance
+6 Author name / Procedia Computer Science 00 (2019) 000–000 
+To sum up, the performance of LightGBM algorithm before and after parameter adjustment is the best. After 
+Bayesian optimization, its performance will be further strengthened. And LightGBM-bayes can make full use of all 
+factors, so this paper decides to choose LightGBM-bayes as the model for the following back test stock selection. 
+4. Implementation of model back testing 
+In this paper, the Annualized Returns、Sharpe Ratio、Information Ratio、Max Drawdown、Total Returns  are 
+taken as the evaluation criterion. 
+This paper selects the data processed in the fourth part as the stock pool, takes the data from January 1, 2013, to 
+December 31, 2017 as the training set, and the back test interval is from January 1, 2018 to December 31, 2018. Based 
+on the LightGBM-bayes multi factor stock selection model, the stocks are sorted in descending order according to the 
+probability of being judged as 1. The top ten stocks are the stock portfolio strategies selected for this year. Buy 10 
+stocks in the portfolio strategy with equa l weights, hold them until the end of the year, and adjust positions every 60 
+trading days. The benchmark is the Shanghai Shenzhen 300 index. The initial capital is set to 10 million yuan, the 
+handling fee is set to 1 / 1000 of the transaction amount, and the sliding point is set to 0. The results of stock selection 
+are as follows: 
+Table 7. Stock selection results 
+ Probability of being judged as 1 Stock Code 
+1 0.913 600642.SH 
+2 0.887 600218.SH 
+3 0.885 600750.SH 
+4 0.884 600879.SH 
+5 0.884 600079.SH 
+6 0.883 601369.SH 
+7 0.881 600123.SH 
+8 0.845 600620.SH 
+9 0.844 601628.SH 
+10 0.844 600143.SH 
+The back testing results are as follows: 
+Table 8. Back Testing Results 
+ Portfolio strategy CSI 300 Index 
+Total Returns 168.8% 66.7% 
+Annualized Returns 19.1% 9.6% 
+Sharpe Ratio 0.96 0.24 
+Max Drawdown 27.7% 31.9% 
+Information Ratio 2.4 0.8 
+It can be seen from table 8 that all indicators of the stock portfolio strategy selected by the multi factor stock 
+selection model based on LightGBM-bayes are better than the benchmark CSI 300 index. Therefore, the LightGBM-
+bayes multi factor stock selection model proposed in this paper is effective. 
+5. Summary 
+With the vigorous development of Chinese stock market and the introduction of the idea of quantitative investment, 
+more and more investors and related scholars began to pay attention to quantitative investment. However, the 
+===== PAGE 7 =====
+1240 Zimo Li  et al. / Procedia Computer Science 214 (2022) 1234–1240
+ Author name / Procedia Computer Science 00 (2019) 000–000  7 
+development of quantitative investment in China is still in the initial stage, and many methods cannot be fully applied 
+in this field. So, this paper tries to apply LightGBM algorithm to quantify investment.  
+In this paper, we select five categories of indicator s that can affect the stock return: valuation, profit, scale, risk, 
+and growth. We use three algorithms of random forest, XGBoost and LightGBM for rolling test, and find that 
+LightGBM algorithm has the best effect. Subsequently, the Bayesian optimization m ethod was used to adjust the 
+parameters, and the results showed that the Bayesian optimization method could effectively improve the algorithm 
+performance, and again verified that the effect of LightGBM was the best. After selecting the multi factor stock 
+selection model based on LightGBM-bayes, this paper uses the processed data to back test, selects the stock portfolio 
+strategy containing 10 stocks, and calculates five investment strategy evaluation indicators. The results show that the 
+indicators of the p ortfolio strategy selected by this model are better than the benchmark CSI 300 index. At present, 
+the idea of quantitative investment has been widely used in China's stock investment market, but the integrated 
+algorithm has not been widely introduced into the field of quantitative investment. The research results of this paper 
+show that the multi factor stock selection model based on LightGBM-bayes is efficient and profitable and can provide 
+a new method and idea for the future research of quantitative investment. 
+However, there are still shortcomings in this paper. In future research, macroeconomic factors, such as GDP, should 
+be added; In addition, during rolling test, the time interval shall be shortened and rolling test shall be conducted in 
+quarterly units. 
+Acknowledgments 
+This research is partially supported by the National Natural Science Foundation  (71932008), the Engineering 
+Research Centre of National Financial Security of Ministry of Education , and the Emerging Interdisciplinary Project 
+of CUFE. 
+References 
+[1] Zhong X., Enke D. (2019) “Predicting the Daily Return Direction of the Stock Market Using Hybrid Machine Learning Algorithms.” Financial 
+Innovation 5: 1-20. 
+[2] Hoseinzade E., Haratizadeh S. (2019) “CNNpred: CNN-Based Stock Market Prediction Using a Diverse Set of Variables.” Expert Systems with 
+Applications 129: 273-285. 
+[3] Zhou X., Pan Z., Hu G., Tang S., Zhao C. (2018) “Stock Market Prediction on High-Frequency Data Using Generative Adversarial Nets .” 
+Mathematical Problems in Engineering 2018: 1-11. 
+[4] Long J., Chen  Z.,  He W., Wu T., Ren J. (2020) “An Integrated  Framework  of Deep Learning and Knowledge Graph for Prediction of Stock 
+Price Trend: An Application in  Chinese  Stock  Exchange  Market.”  Applied  Soft  Computing  91: 106205. 
+[5] Li WX, Li JQ. (2018) “Improvement of Semi Supervised Kernel Clustering Algorithm Based on Multi Factor Stock Selection.” Statistics and 
+Information Forum 33(3): 30-36. 
+[6] Wang L, Li L. (2020) “Multi Factor Quantitative Stock Selection Strategy Based on gcforest.” Computer engineering and Application 56(15):86-
+91. 
+[7] Wang BY , Liu YJ. (2022) “Research on Stock Price Prediction Based on Signal-to-Noise Ratio KPCA-SVM-KNN Algorithm.” Computer and 
+digital engineering 50(04):685-690. 
+[8] Green J., Hand J.R.M., Zhang F.  (2017) “The Characteristics that Provide Independent Information  about  Average  U.S.  Monthly  Stock  
+Returns.”  Social  Science Electronic Publishing 30(12): 4389-4436. 
+[9] Hou K., Chen X., Lu Z. (2020) “Replicating Anomalies.” The Review of Financial Studies 33(5): 2019-2133. 
+[10] Li QQ. (2019) “Establishment and Optimization of Multi Factor Quantitative Stock Selection Model” Shandong University. 
+ 
+  
